@@ -1,5 +1,6 @@
 package cn.edu.gdpt.xxgcx.barrage171032ywj;
 
+import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -40,6 +41,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }else {
             mVdoViMainVideo.getBackground().setAlpha(0);//设置背景色为透明
         }
+        //循环播放
+        mVdoViMainVideo.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+            @Override
+            public void onPrepared(MediaPlayer mp) {
+                mp.start();
+                mp.setLooping(true);
+            }
+        });
+
     }
 
     private void initView() {
