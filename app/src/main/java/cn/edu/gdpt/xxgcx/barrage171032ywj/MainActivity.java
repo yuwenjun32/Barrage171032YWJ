@@ -1,5 +1,6 @@
 package cn.edu.gdpt.xxgcx.barrage171032ywj;
 
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
@@ -25,6 +26,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         initView();
+        playVideo();
+    }
+
+    /*
+    *播放视频
+    */
+    private void playVideo(){
+        String uri="android.resource://"+getPackageName()+"/"+R.raw.sun;//视频路径
+        if (uri!=null){
+            mVdoViMainVideo.setVideoURI(Uri.parse(uri));//通过URI解析路径，并赋给VideoView控件
+            mVdoViMainVideo.start();//播放视频
+        }else {
+            mVdoViMainVideo.getBackground().setAlpha(0);//设置背景色为透明
+        }
     }
 
     private void initView() {
@@ -45,6 +60,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
         }
     }
+
 
     private void submit() {
         // validate
