@@ -1,5 +1,6 @@
 package cn.edu.gdpt.xxgcx.barrage171032ywj;
 
+import android.graphics.Color;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
@@ -12,6 +13,13 @@ import android.widget.LinearLayout;
 import android.widget.Toast;
 import android.widget.VideoView;
 
+import master.flame.danmaku.controller.DrawHandler;
+import master.flame.danmaku.danmaku.model.BaseDanmaku;
+import master.flame.danmaku.danmaku.model.DanmakuTimer;
+import master.flame.danmaku.danmaku.model.IDanmakus;
+import master.flame.danmaku.danmaku.model.android.DanmakuContext;
+import master.flame.danmaku.danmaku.model.android.Danmakus;
+import master.flame.danmaku.danmaku.parser.BaseDanmakuParser;
 import master.flame.danmaku.ui.widget.DanmakuView;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
@@ -22,12 +30,55 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private Button mBtnMainSend;
     private LinearLayout mLinlayMainBottom;
 
+    //声明和定义3个相关变量
+    private  boolean showDanmaku;//弹幕是否显示
+    private DanmakuContext danmakuContext;//弹幕上下文，存放弹幕相关信息比如文字大小，颜色等；
+    private BaseDanmakuParser parser=new BaseDanmakuParser() {//定义弹幕解析器
+        @Override
+        protected IDanmakus parse() {
+            return new Danmakus();
+        }
+    };
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         initView();
         playVideo();
+        initDanmaku();//3.调用弹幕初始化
+    }
+
+    /*
+    *2.初始化弹幕
+    */
+    private  void initDanmaku(){
+        mKuViewMainBarrage.setCallback(new DrawHandler.Callback() {//4.设置弹幕的回调函数
+            @Override
+            public void prepared() {//5.设定为显示弹幕，并开启弹幕
+                showDanmaku=true;
+                mKuViewMainBarrage.start();
+            }
+
+            @Override
+            public void updateTimer(DanmakuTimer timer) {
+
+            }
+
+            @Override
+            public void danmakuShown(BaseDanmaku danmaku) {
+
+            }
+
+            @Override
+            public void drawingFinished() {
+
+            }
+        });
+        danmakuContext=DanmakuContext.create();//赋值，创建弹幕上下文对象
+        mKuViewMainBarrage.enableDanmakuDrawingCache(true);//提高绘制效率
+        mKuViewMainBarrage.prepare(parser,danmakuContext);//参数为解析器和上下文
+
     }
 
     /*
@@ -58,8 +109,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mEdtTxtMainInput = (EditText) findViewById(R.id.edtTxt_main_input);
         mBtnMainSend = (Button) findViewById(R.id.btn_main_send);
         mLinlayMainBottom = (LinearLayout) findViewById(R.id.linlay_main_bottom);
-
+        mLinlayMainBottom.setVisibility(View.GONE);
         mBtnMainSend.setOnClickListener(this);
+        mKuViewMainBarrage.setOnClickListener(this);
     }
 
     @Override
@@ -68,6 +120,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             case R.id.btn_main_send:
                 submit();
                 break;
+            case R.id.mKuViewMainBarrage;//点击弹幕时触发
+                if (mLinlayMainBottom.getVisibility()==View.GONE){//
+                    mLinlayMainBottom.setVisibility(View.VISIBLE);
+                }else {
+                    mLinlayMainBottom.setVisibility(View.GONE);
+                }
+                break;;
         }
     }
 
@@ -79,9 +138,24 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             Toast.makeText(this, "input不能为空", Toast.LENGTH_SHORT).show();
             return;
         }
-
         // TODO validate success, do something
+        addDanmaku(input,true);
 
+    }
 
+    /**
+     * 添加一条弹幕
+     */
+    private void addDanmaku(String context,Boolean border){
+        BaseDanmaku danmaku=danmakuContext.mDanmakuFactory.createDanmaku(BaseDanmaku.TYPE_SCROLL_RL);
+        danmaku.text=context;//文本内容
+        danmaku.textSize=30;//字体大小
+        danmaku.padding=6;//内边框距离
+        danmaku.textColor=Color.WHITE;//文本颜色
+        danmaku.setTime(mKuViewMainBarrage.getCurrentTime());//显示时间
+        if (border){
+            danmaku.borderColor=Color.RED;//\边框颜色
+        }
+        mKuViewMainBarrage.addDanmaku(danmaku);//将弹幕添加到弹幕视图控件中去
     }
 }
